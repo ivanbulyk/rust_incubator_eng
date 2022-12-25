@@ -15,14 +15,14 @@
     - It allows statically (without running the program) detecting many programming errors quickly, reliably and automatically. This helps reduce the number of bugs and reduces the time spent on debugging. Type declarations serve as automatically-checked documentation. They make programs easier to understand and maintain. Static typing may improve runtime efficiency.
     <br><br/>
 - What are generics and parametric polymorphism? Which problems do they solve?
-    - Generics in Rust is a method of generalizing data types. Generics are always defined at run time. As generics can have multiple forms over given parameters and can be applied to methods, functions, structures, traits, etc they are often referred to as parametric polymorphism in type theory, which means that they are types or functions that have multiple forms (‘poly’ is multiple, ‘morph’ is form) over a given parameter (‘parametric’).
+    - Generics in Rust is a method of generalizing data types. As generics can have multiple forms over given parameters and can be applied to methods, functions, structures, traits, etc they are often referred to as parametric polymorphism in type theory, which means that they are types or functions that have multiple forms (‘poly’ is multiple, ‘morph’ is form) over a given parameter (‘parametric’).
     - They are extremely useful for reducing code duplication in many ways.
     <br><br/>
 - What are traits? How are they used? How do they compare to interfaces? What are an auto trait and a blanket impl? What is a marker trait?
     - A trait in Rust is a group of methods that are defined for a particular type.
     - A trait defines functionality a particular type has and can share with other types. We can use traits to define shared behavior in an abstract way. We can use trait bounds to specify that a generic type can be any type that has certain behavior.
     - Traits are similar to a feature often called interfaces in other languages, although with some differences.
-    - Auto traits permit automatically implementing a trait for types which contain fields implementing the trait. That is, they are fairly close to an automatic derive. They describe properties of types rather than behaviors.
+    - Auto traits permit automatically implementing a trait for types which contain fields implementing the trait. That is, they are fairly close to an automatic derive. They describe properties of types rather than behaviors. The examples of auto traits are : Send, Sync, Unpin, UnwindSafe, and RefUnwindSafe.
     - Implementations of a trait on any type that satisfies the trait bounds are called blanket implementations and are extensively used in the Rust standard library.
     - Rust has a handful of "markers" that classify types: Send, Sync, Copy, Sized. These markers are just traits with empty bodies, which can then be used in both generics and trait objects.
     <br><br/>
@@ -40,8 +40,20 @@
     <br><br/>
 - What is a crate and what is a module in Rust? How do they differ? How are the used?
     - Crates can produce an executable or a library, depending on the project. Each crate has an implicit root module that contains the code for that crate. You can then define a tree of sub-modules under that root module. Modules allow you to partition your code within the crate itself, hierarchically splitting code in logical units (modules), and manage visibility (public/private) between them.  
-    So a module is a collection of items: functions, structs, traits, impl blocks, and even other modules.
-    <br><br/>
+    So a module is a collection of items and it can contain:
+        <br><br/>
+        Functions  
+        Types (structs, enums, unions, type aliases)  
+        Traits  
+        Impl blocks  
+        Macros  
+        Constants and statics  
+        Extern blocks  
+        Extern crates  
+        Imports  
+        Modules  
+        Associated items
+        <br><br/>
 - What are move semantics? What are borrowing rules? What is the benefit of using them?
     - In Rust, all types are mutable, and all move operations are equivalent to a bit copy of the original data at the new location. Move converts any captured variables by reference or mutable reference to captured variables by value.
 
@@ -161,6 +173,12 @@
     <br><br/>
     &str is a slice (&[u8]) that always points to a valid UTF-8 sequence, and can be used to view into a String, just like &[T] is a view into Vec<T>.  
     Maybe we should refer &str as a function parameter or if you want a read-only view of a string; String when you want to own and mutate a string.
+    <br><br/>
+    String is an owned type that needs to be allocated. It has dynamic size and hence its size is unknown at compile time, since the capacity of the internal array can change at any time.  
+    &str consists just of a pointer into memory, its size is known at compile time. It’s not an owned type, but rather a read-only reference to a string slice. the memory the &str points to can not be changed while the &str is in existence, even by the owner of the str. &str is a great candidate for function arguments, if mutability and ownership are not required. Its best used when a slice (view) of a string is needed, which does not need to be changed.
+    The &String type is simply a reference to a String. This means that this isn’t an owned type and its size is known at compile-time, since it’s only a pointer to an actual String.  
+    &String can be coerced to &str, but not the other way around, it usually makes sense to use &str as a parameter type, if we just need a read-only view of a string.
+    We can't use str because the size for values of type str cannot be known at compilation time. And function arguments must have a statically known size, borrowed types always have a known size: &.
     <br><br/>
 - What are lifetimes? Which problems do they solve? Which benefits do they give?
     - A lifetime is a construct the compiler (or more specifically, its borrow checker) uses to ensure all borrows are valid. Specifically, a variable's lifetime begins when it is created and ends when it is destroyed. Other words lifetimes are named regions of code that a reference must be valid for. Those regions may be fairly complex, as they correspond to paths of execution in the program. There may even be holes in these paths of execution, as it's possible to invalidate a reference as long as it's reinitialized before it's used again. Types which contain references (or pretend to) may also be tagged with lifetimes so that Rust can prevent them from being invalidated as well.
