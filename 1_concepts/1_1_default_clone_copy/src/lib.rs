@@ -1,13 +1,7 @@
 #![allow(unused)]
-use nonempty::NonEmpty;
 use std::io;
 
-#[derive(PartialEq, Debug)]
-struct Point {
-    x: f32,
-    y: f32,
-}
-
+/*
 impl Default for Point {
     fn default() -> Self {
         Self { x: 0.0, y: 0.0 }
@@ -21,10 +15,36 @@ impl Clone for Point {
 }
 
 impl Copy for Point {}
+*/
+#[derive(PartialOrd, Copy, Clone, Default, PartialEq, Debug)]
+struct Point {
+    x: f32,
+    y: f32,
+}
+
+#[derive(Clone, Debug, PartialEq, PartialOrd)]
+struct CustomNonEmpty<Point> {
+    initial_elem: Point,
+    body: Vec<Point>,
+}
 
 #[derive(Debug, Clone)]
 struct Polyline {
-    points: NonEmpty<Point>,
+    points: CustomNonEmpty<Point>,
+}
+
+impl<Point> CustomNonEmpty<Point> {
+    fn new(e: Point) -> Self {
+        Self::origin(e)
+    }
+
+    /// Create a new non-empty list with an initial element.
+    fn origin(initial_elem: Point) -> Self {
+        CustomNonEmpty {
+            initial_elem,
+            body: Vec::new(),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -47,9 +67,7 @@ mod tests {
 
     #[test]
     fn polyline_clone() {
-        let v: NonEmpty<Point> = NonEmpty::new(Point {
-            ..Default::default()
-        });
+        let mut v = CustomNonEmpty::new(Point::default());
         let z = v.clone();
         assert_ne!(None, Some(z));
     }
