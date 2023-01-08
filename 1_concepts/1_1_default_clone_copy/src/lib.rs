@@ -1,5 +1,6 @@
 #![allow(unused)]
 use std::io;
+use core::ops::Deref;
 
 /*
 impl Default for Point {
@@ -33,8 +34,24 @@ struct Polyline {
     points: CustomNonEmpty<Point>,
 }
 
+impl Deref for Polyline {
+    type Target = [CustomNonEmpty<Point>];
+    fn deref(&self) -> &[CustomNonEmpty<Point>] {
+        &[]
+    }
+}
+impl<T> AsRef<T> for Polyline
+where
+    T: ?Sized,
+    <Polyline as Deref>::Target: AsRef<T>,
+{
+    fn as_ref(&self) -> &T {
+        self.deref().as_ref()
+    }
+}
+
 impl<Point> CustomNonEmpty<Point> {
-    fn new(e: Point) -> Self {
+    pub fn new(e: Point) -> Self {
         Self::origin(e)
     }
 
@@ -45,6 +62,7 @@ impl<Point> CustomNonEmpty<Point> {
             body: Vec::new(),
         }
     }
+ 
 }
 
 #[cfg(test)]
