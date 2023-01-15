@@ -9,8 +9,8 @@ trait MutMeSomehow {
 
 impl<T: std::clone::Clone> MutMeSomehow for Box<T> {
     fn mut_me_somehow(mut self: std::pin::Pin<&mut Self>) {
-      let mut a =  self.clone();
-      self.set(a);
+        let mut a = self.clone();
+        self.set(a);
     }
 }
 
@@ -47,17 +47,14 @@ impl MutMeSomehow for &[u8] {
 }
 
 mod t_parent {
-    use std::{fmt, io, pin::Pin, ops::Deref};
+    use std::{fmt, io, ops::Deref, pin::Pin};
 
     trait MutMeSomehow {
         fn mut_me_somehow(self: std::pin::Pin<&mut Self>);
     }
 
-
     impl<T: std::clone::Clone> MutMeSomehow for T {
-
         fn mut_me_somehow(mut self: std::pin::Pin<&mut Self>) {
-
             let mut d = self.clone();
             self.set(d);
         }
@@ -82,35 +79,15 @@ trait SayHi: fmt::Debug {
     }
 }
 
-impl<T: fmt::Debug> SayHi for Box<T> {
-    fn say_hi(self: Pin<&Self>) {
-        println!("Hi from {:?}", self)
-    }
-}
+impl<T: fmt::Debug> SayHi for Box<T> {}
 
-impl<T: fmt::Debug> SayHi for Rc<T> {
-    fn say_hi(self: Pin<&Self>) {
-        println!("Hi from {:?}", self)
-    }
-}
+impl<T: fmt::Debug> SayHi for Rc<T> {}
 
-impl<T: fmt::Debug> SayHi for Vec<T> {
-    fn say_hi(self: Pin<&Self>) {
-        println!("Hi from {:?}", self)
-    }
-}
+impl<T: fmt::Debug> SayHi for Vec<T> {}
 
-impl SayHi for String {
-    fn say_hi(self: Pin<&Self>) {
-        println!("Hi from {:?}", self)
-    }
-}
+impl SayHi for String {}
 
-impl SayHi for &[u8] {
-    fn say_hi(self: Pin<&Self>) {
-        println!("Hi from {:?}", self)
-    }
-}
+impl SayHi for &[u8] {}
 
 #[cfg(test)]
 mod tests {
