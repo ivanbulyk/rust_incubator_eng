@@ -1,6 +1,6 @@
 #![allow(unused)]
-use std::io;
 use core::ops::Deref;
+use std::{io, mem};
 
 /*
 impl Default for Point {
@@ -18,36 +18,20 @@ impl Clone for Point {
 impl Copy for Point {}
 */
 #[derive(PartialOrd, Copy, Clone, Default, PartialEq, Debug)]
-struct Point {
-    x: f32,
-    y: f32,
+pub struct Point {
+    pub x: f32,
+    pub y: f32,
 }
 
 #[derive(Clone, Debug, PartialEq, PartialOrd)]
-struct CustomNonEmpty<Point> {
+pub struct CustomNonEmpty<Point> {
     initial_elem: Point,
     body: Vec<Point>,
 }
 
 #[derive(Debug, Clone)]
-struct Polyline {
-    points: CustomNonEmpty<Point>,
-}
-
-impl Deref for Polyline {
-    type Target = [CustomNonEmpty<Point>];
-    fn deref(&self) -> &[CustomNonEmpty<Point>] {
-        &[]
-    }
-}
-impl<T> AsRef<T> for Polyline
-where
-    T: ?Sized,
-    <Polyline as Deref>::Target: AsRef<T>,
-{
-    fn as_ref(&self) -> &T {
-        self.deref().as_ref()
-    }
+pub struct Polyline {
+    pub points: CustomNonEmpty<Point>,
 }
 
 impl<Point> CustomNonEmpty<Point> {
@@ -62,7 +46,36 @@ impl<Point> CustomNonEmpty<Point> {
             body: Vec::new(),
         }
     }
- 
+
+    /// Get the length of the list.
+    pub fn len(&self) -> usize {
+        self.body.len() + 1
+    }
+
+    /// Inserts an element at position index within the vector, shifting all elements after it to the right.
+
+    /// Panics if index > len.
+
+    pub fn insert(&mut self, index: usize, element: Point) {
+        let len = self.len();
+        assert!(index <= len);
+
+        if index == 0 {
+            let initial_elem = mem::replace(&mut self.initial_elem, element);
+            self.body.insert(0, initial_elem);
+        } else {
+            self.body.insert(index - 1, element);
+        }
+    }
+
+    /// Get an element by index.
+    pub fn get(&self, index: usize) -> Option<&Point> {
+        if index == 0 {
+            Some(&self.initial_elem)
+        } else {
+            self.body.get(index - 1)
+        }
+    }
 }
 
 #[cfg(test)]
