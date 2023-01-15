@@ -4,6 +4,7 @@ fn main() {
     println!("Implemented you!");
 
     let gl_stack: GlobalStack<isize> = GlobalStack::new();
+
     gl_stack.push(1);
     gl_stack.push(2);
     gl_stack.push(3);
