@@ -13,7 +13,8 @@ impl Default for Config<'_> {
 }
 
 impl Config<'_> {
-    pub fn build(args: &[String]) -> Config {
+    pub fn build() -> Config<'static> {
+        let args: Vec<_> = std::env::args().collect();
         if args.len() < 3 && args.len() > 1 {
             if args[1] == "--conf" {
                 eprintln!("the path to conf file is not specified\n");
@@ -22,12 +23,11 @@ impl Config<'_> {
             }
         }
 
-        let mut res = Config::default();
-
         if args.len() >= 3 {
             if args[1] == "--conf" {
-                res.file_path = Cow::Borrowed(&args[2]);
-                return res;
+                return Config {
+                    file_path: args[2].clone().into(),
+                };
             } else {
                 eprintln!("invalid order command line arguments is specified\n");
             }
@@ -35,14 +35,14 @@ impl Config<'_> {
 
         let success_case = env::var("APP_CONF").is_ok();
 
-        if success_case {
-            let app_conf = std::env::var("APP_CONF").expect("APP_CONF must be properly set.\n");
+        if let Ok(app_conf) = env::var("APP_CONF") {
             if app_conf != "" {
-                res.file_path = Cow::Owned(app_conf);
-                return res;
+                return Config {
+                    file_path: Cow::Owned(app_conf),
+                };
             }
         }
 
-        res
+        Default::default()
     }
 }
