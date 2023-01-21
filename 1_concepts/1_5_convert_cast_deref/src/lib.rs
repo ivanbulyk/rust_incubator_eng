@@ -7,12 +7,13 @@ use rand::Rng;
 #[derive(PartialEq, Debug, Clone)]
 pub struct EmailString(String);
 
-impl From<&str> for EmailString {
-    fn from(str: &str) -> Self {
+impl TryFrom<&str> for EmailString {
+    type Error = &'static str;
+    fn try_from(str: &str) -> Result<Self, Self::Error> {
         if !EmailAddress::is_valid(str) {
-            panic!("invalid email address")
+            Err("unvalid email address")
         } else {
-            EmailString(str.to_string())
+            Ok(EmailString(str.to_string()))
         }
     }
 }
@@ -35,26 +36,22 @@ pub struct Random<T> {
 }
 impl<T> Random<T> {
     pub fn new(a: T, b: T, c: T) -> Self {
-        Random {
-            body: [a, b, c],
-        }
+        Random { body: [a, b, c] }
     }
 }
 
-impl <T>From<[T; 3]> for Random<T> {
+impl<T> From<[T; 3]> for Random<T> {
     fn from(arr: [T; 3]) -> Self {
         Random { body: arr }
     }
 }
 
-impl <T: Copy> TryFrom<Vec<T>> for Random<T> {
+impl<T> TryFrom<Vec<T>> for Random<T> {
     type Error = &'static str;
     fn try_from(v: Vec<T>) -> Result<Self, Self::Error> {
-        if v.len() < 3 {
-            Err("insufficient vector length")
-        } else {
-            Ok(Random { body: [v[0],v[1],v[2]] })
-        }
+        Ok(Self {
+            body: v.try_into().map_err(|_| "insufficient vector length")?,
+        })
     }
 }
 
@@ -76,30 +73,13 @@ impl<T> AsRef<T> for Random<T> {
     }
 }
 
-mod oth_scope {
-    use email_address::*;
-
-    pub struct EmailString(String);
-
-    impl TryFrom<&str> for EmailString {
-        type Error = &'static str;
-        fn try_from(str: &str) -> Result<Self, Self::Error> {
-            if !EmailAddress::is_valid(str) {
-                Err("unvalid email address")
-            } else {
-                Ok(EmailString(str.to_string()))
-            }
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_to_strings() {
-        let email = EmailString::from("john@example.uk");
+        let email = EmailString::try_from("john@example.uk").unwrap();
 
         let email_2: String = email.into();
 
@@ -112,9 +92,8 @@ mod tests {
 
     #[test]
     fn test_to_as_ref() {
-        let email = EmailString::from("john@example.uk");
+        let email = EmailString::try_from("john@example.uk").unwrap();
 
         assert_eq!(email.as_ref(), "john@example.uk");
     }
-    
 }
