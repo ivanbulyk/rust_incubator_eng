@@ -9,7 +9,11 @@ pub struct EmailString(String);
 
 impl From<&str> for EmailString {
     fn from(str: &str) -> Self {
-        EmailString(str.to_string())
+        if !EmailAddress::is_valid(str) {
+            panic!("invalid email address")
+        } else {
+            EmailString(str.to_string())
+        }
     }
 }
 
@@ -27,12 +31,29 @@ impl AsRef<str> for EmailString {
 
 #[derive(Debug, Clone)]
 pub struct Random<T> {
-    body: Vec<T>,
+    body: [T; 3],
 }
 impl<T> Random<T> {
     pub fn new(a: T, b: T, c: T) -> Self {
         Random {
-            body: vec![a, b, c],
+            body: [a, b, c],
+        }
+    }
+}
+
+impl <T>From<[T; 3]> for Random<T> {
+    fn from(arr: [T; 3]) -> Self {
+        Random { body: arr }
+    }
+}
+
+impl <T: Copy> TryFrom<Vec<T>> for Random<T> {
+    type Error = &'static str;
+    fn try_from(v: Vec<T>) -> Result<Self, Self::Error> {
+        if v.len() < 3 {
+            Err("insufficient vector length")
+        } else {
+            Ok(Random { body: [v[0],v[1],v[2]] })
         }
     }
 }
