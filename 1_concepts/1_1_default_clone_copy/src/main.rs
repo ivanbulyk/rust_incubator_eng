@@ -1,3 +1,4 @@
+#![allow(unused)]
 use step_1_1::{CustomNonEmpty, Point, Polyline};
 
 fn main() {
@@ -7,7 +8,12 @@ fn main() {
         points: CustomNonEmpty::new(Point::default()),
     };
 
-    p.points.insert(0, Point { x: 1.0, y: 1.0 });
+    let res = p
+        .points
+        .insert(1, Point { x: 1.0, y: 1.0 })
+        .unwrap_or_else(|err| {
+            eprintln!("Problem inserting element: {err}");
+        });
 
     println!("{:#?}", p.points.get(0));
 }

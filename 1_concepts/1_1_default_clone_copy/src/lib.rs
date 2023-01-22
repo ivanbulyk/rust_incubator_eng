@@ -56,9 +56,12 @@ impl<Point> CustomNonEmpty<Point> {
 
     /// Panics if index > len.
 
-    pub fn insert(&mut self, index: usize, element: Point) {
+    pub fn insert(&mut self, index: usize, element: Point) -> Result<(), &'static str> {
         let len = self.len();
-        assert!(index <= len);
+
+        if index >= len {
+            return Err("invalid position provided");
+        }
 
         if index == 0 {
             let initial_elem = mem::replace(&mut self.initial_elem, element);
@@ -66,6 +69,8 @@ impl<Point> CustomNonEmpty<Point> {
         } else {
             self.body.insert(index - 1, element);
         }
+
+        Ok(())
     }
 
     /// Get an element by index.
