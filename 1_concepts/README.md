@@ -23,6 +23,7 @@ The following articles may help you to sum up your experience:
 - [Learn Rust With Entirely Too Many Linked Lists][4]
 
 
+
 ## Task
 
 Provide your own implementation of [doubly linked list][11] data structure. It should be [thread safe][12] without a necessity to use explicit synchronization primitives (like `Arc<Mutex<T>>`) on top of it.

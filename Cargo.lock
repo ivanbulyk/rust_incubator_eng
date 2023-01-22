@@ -2,6 +2,7 @@
 # It is not intended for manual editing.
 version = 3
 
+
 [[package]]
 name = "step_1"
 version = "0.1.0"
@@ -9,6 +10,9 @@ version = "0.1.0"
 [[package]]
 name = "step_1_1"
 version = "0.1.0"
+dependencies = [
+ "nonempty",
+]
 
 [[package]]
 name = "step_1_2"
