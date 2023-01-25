@@ -31,9 +31,12 @@ pub struct User {
 }
 
 pub trait UserRepository {
+    type Error;
+
     fn set(&mut self, key: u64, val: User);
     fn get(&self, key: &u64) -> Option<&User>;
     fn remove(&mut self, key: &u64) -> Option<User>;
+    fn update(&mut self, key: u64, val: User) -> Result<(), Self::Error>;
 }
 
 pub struct UserRepoImpl<S: Storage<u64, User>> {
@@ -41,6 +44,8 @@ pub struct UserRepoImpl<S: Storage<u64, User>> {
 }
 
 impl<S: Storage<u64, User>> UserRepository for UserRepoImpl<S> {
+    type Error = &'static str;
+
     fn set(&mut self, key: u64, val: User) {
         self.storage.set(key, val)
     }
@@ -52,9 +57,20 @@ impl<S: Storage<u64, User>> UserRepository for UserRepoImpl<S> {
     fn remove(&mut self, key: &u64) -> Option<User> {
         self.storage.remove(key)
     }
+
+    fn update(&mut self, key: u64, val: User) -> Result<(), Self::Error> {
+        match self.storage.get(&key) {
+            Some(_) => {
+                self.storage.set(key, val);
+                Ok(())
+            }
+            None => Err("user not found"),
+        }
+    }
 }
 
 mod dyn_impl {
+
     use crate::{Storage, User, UserRepository};
 
     impl<K: Eq, V> Storage<K, V> for Vec<(K, V)> {
@@ -86,6 +102,8 @@ mod dyn_impl {
     }
 
     impl UserRepository for DynUserRepoImpl {
+        type Error = &'static str;
+
         fn set(&mut self, key: u64, val: User) {
             self.storage.set(key, val)
         }
@@ -97,6 +115,16 @@ mod dyn_impl {
         fn remove(&mut self, key: &u64) -> Option<User> {
             self.storage.remove(key)
         }
+
+        fn update(&mut self, key: u64, val: User) -> Result<(), Self::Error> {
+            match self.storage.get(&key) {
+                Some(_) => {
+                    self.storage.set(key, val);
+                    Ok(())
+                }
+                None => Err("user not found"),
+            }
+        }
     }
 }
 
@@ -107,18 +135,53 @@ mod tests {
 
     #[test]
     fn non_dynamic_impl_test() {
-        let user1 = User {
+        let user0 = User {
             id: 0,
             email: Cow::from("test@gmail.com"),
             activated: true,
+        };
+
+        let user1 = User {
+            id: 1,
+            email: Cow::from("test1@gmail.com"),
+            activated: false,
         };
 
         let mut storage: HashMap<u64, User> = Default::default();
 
         let mut repo = UserRepoImpl { storage };
 
-        repo.set(user1.id, user1.clone());
+        repo.set(user0.id, user0.clone());
+        assert_eq!(repo.get(&user0.id), Some(&user0.clone()));
 
-        assert_eq!(repo.get(&user1.id), Some(&user1));
+        repo.update(0, user1.clone());
+        assert_eq!(repo.get(&0), Some(&user1.clone()));
+    }
+
+    #[test]
+    fn dynamic_impl_test() {
+        let user0 = User {
+            id: 0,
+            email: Cow::from("test@gmail.com"),
+            activated: true,
+        };
+
+        let user1 = User {
+            id: 1,
+            email: Cow::from("test1@gmail.com"),
+            activated: false,
+        };
+
+        let mut strg: HashMap<u64, User> = Default::default();
+
+        let mut repo = DynUserRepoImpl {
+            storage: Box::new(strg),
+        };
+
+        repo.set(user0.id, user0.clone());
+        assert_eq!(repo.get(&user0.id), Some(&user0));
+
+        repo.update(0, user1.clone());
+        assert_eq!(repo.get(&0), Some(&user1));
     }
 }
