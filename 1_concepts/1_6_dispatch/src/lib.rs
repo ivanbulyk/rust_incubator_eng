@@ -134,7 +134,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn non_dynamic_impl_test() {
+    fn static_impl_test() {
         let user0 = User {
             id: 0,
             email: Cow::from("test@gmail.com"),
