@@ -1,27 +1,28 @@
 #![allow(unused)]
 use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Mutex;
 use std::thread;
 
 struct OnlySync {
-    value: Rc<u32>,
+    value: Mutex<u32>,
 }
-
-unsafe impl Sync for OnlySync {}
 
 impl OnlySync {
     fn new(value: u32) -> Self {
         OnlySync {
-            value: Rc::new(value),
+            value: Mutex::new(value),
         }
+    }
+
+    fn get_value(&self) -> std::sync::MutexGuard<'_, u32> {
+        self.value.lock().unwrap()
     }
 }
 
 struct OnlySend {
     value: u32,
 }
-
-unsafe impl Send for OnlySend {}
 
 impl OnlySend {
     fn new(value: u32) -> Self {
@@ -38,9 +39,6 @@ impl OnlySend {
 struct SyncAndSend {
     value: AtomicUsize,
 }
-
-unsafe impl Send for SyncAndSend {}
-unsafe impl Sync for SyncAndSend {}
 
 impl SyncAndSend {
     fn new() -> Self {
@@ -68,8 +66,4 @@ impl NotSyncNotSend {
             value: Rc::new(value),
         }
     }
-}
-
-mod tests {
-    use super::*;
 }
