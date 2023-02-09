@@ -104,6 +104,16 @@ impl<T: Clone + Copy> DoublyLinkedList<T> {
     }
 }
 
+impl<T> Drop for DoublyLinkedList<T> {
+    fn drop(&mut self) {
+        while let Some(node) = self.head.take() {
+            let _ = node.write().unwrap().prev.take();
+            self.head = node.write().unwrap().next.take()
+        }
+        self.tail.take();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -149,6 +159,39 @@ mod tests {
         assert_eq!(dll.remove_tail(), Some(3));
         assert_eq!(dll.peek_front(), None);
         assert_eq!(dll.peek_back(), None);
+    }
+
+    #[test]
+    fn test_drop() {
+        let mut dll = DoublyLinkedList::<Symbols>::new();
+        #[derive(Debug, PartialEq, Clone, Copy)]
+        struct Symbols {
+            n: i32,
+        }
+
+        // insert_head
+        let s = Symbols { n: 1 };
+        dll.insert_head(s);
+        assert_eq!(dll.peek_front(), Some(s));
+        assert_eq!(dll.peek_back(), Some(s));
+
+        let s2 = Symbols { n: 2 };
+        dll.insert_head(s2);
+        assert_eq!(dll.peek_front(), Some(s2));
+        assert_eq!(dll.peek_back(), Some(s));
+
+        // insert_tail
+        let s3 = Symbols { n: 3 };
+        dll.insert_tail(s3);
+        assert_eq!(dll.peek_front(), Some(s2));
+        assert_eq!(dll.peek_back(), Some(s3));
+
+        let s4 = Symbols { n: 4 };
+        dll.insert_tail(s4);
+        assert_eq!(dll.peek_front(), Some(s2));
+        assert_eq!(dll.peek_back(), Some(s4));
+
+        drop(dll);
     }
 
     #[cfg(test)]
